@@ -1,0 +1,1 @@
+cmd_/home/frankie/esp32/we_esp32/boot/driver/cp210x.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/frankie/esp32/we_esp32/boot/driver/cp210x.ko /home/frankie/esp32/we_esp32/boot/driver/cp210x.o /home/frankie/esp32/we_esp32/boot/driver/cp210x.mod.o
