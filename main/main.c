@@ -52,11 +52,11 @@ void app_main()
     io_conf.pull_up_en = 0;
     //configure GPIO with the given settings
     gpio_config(&io_conf);
-    //hal_i2c_init(0,5,17);
+    hal_i2c_init(0,5,17);
     uint8_t data=0;
     esp_err_t err;
     int cnt = 0;
-    //hal_i2s_init(0,48000,16,2);
+    hal_i2s_init(0,48000,16,2);
     while(1) {
         printf("cnt: %d\n", cnt++);
         vTaskDelay(1000 / portTICK_RATE_MS);
