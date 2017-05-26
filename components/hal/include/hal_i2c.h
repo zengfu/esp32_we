@@ -7,3 +7,4 @@ esp_err_t hal_i2c_master_mem_write(i2c_port_t i2c_num, uint8_t DevAddr,uint8_t M
 void hal_i2c_init(uint8_t port ,uint8_t sda,uint8_t scl);
 
 #endif
+

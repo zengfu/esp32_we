@@ -14,6 +14,7 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "hal_i2c.h"
+#include "hal_i2s.h"
 
 /**
  * Brief:
@@ -55,6 +56,7 @@ void app_main()
     uint8_t data=0;
     esp_err_t err;
     int cnt = 0;
+    //hal_i2s_init(0,48000,16,2);
     while(1) {
         printf("cnt: %d\n", cnt++);
         vTaskDelay(1000 / portTICK_RATE_MS);

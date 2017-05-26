@@ -12,3 +12,8 @@ static esp_err_t wm8978_write_reg(i2c_port_t i2c_num,uint8_t reg,uint16_t data)
 	err=hal_i2c_master_mem_write(i2c_num,wm8978_ADD,buf[0],buf+1,1);
 	return err;
 }
+void wm8979_init()
+{
+	
+}
+
