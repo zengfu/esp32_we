@@ -12,7 +12,7 @@ void hal_i2s_init(uint8_t i2s_num,uint32_t rate,uint8_t bits,uint8_t ch)
 		chanel=I2S_CHANNEL_FMT_ONLY_LEFT;
 
 	i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER | I2S_MODE_TX|I2S_MODE_RX,                    
+        .mode = I2S_MODE_SLAVE | I2S_MODE_TX|I2S_MODE_RX,                    
         .sample_rate = rate,
         .bits_per_sample = bits,                                              
         .channel_format = chanel,                           //2-channels
@@ -31,7 +31,7 @@ void hal_i2s_init(uint8_t i2s_num,uint32_t rate,uint8_t bits,uint8_t ch)
     i2s_set_pin(i2s_num, &pin_config);
     //clk out
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
-    i2s_set_clk(i2s_num, rate, bits, ch);
+    //i2s_set_clk(i2s_num, rate, bits, ch);
 }
 
 
