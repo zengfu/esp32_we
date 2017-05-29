@@ -1,4 +1,4 @@
-#include "esp_eth.h"
+//#include "esp_eth.h"
 #include "hal_eth.h"
 #include "soc/io_mux_reg.h"
 #include "eth_phy/phy_lan8720.h"
@@ -33,7 +33,7 @@ static void eth_gpio_config_rmii()
     //clk out to GPIO17
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO16_U, FUNC_GPIO16_EMAC_CLK_OUT);  
     // for rev0 chip: f_out = f_xtal * (sdm2 + 4) / (2 * (o_div + 2))
-    // so for 40MHz XTAL, sdm2 = 1 and o_div = 1 will give 50MHz output
+    // so for 40MHz XTAL, sdm2 = 1 and o_div = 1 will give 50MHz //output
 
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO16_U, FUNC_GPIO16_EMAC_CLK_OUT);
     // REG_SET_FIELD(EMAC_EX_CLKOUT_CONF_REG, EMAC_EX_CLK_OUT_H_DIV_NUM, 0);
@@ -73,7 +73,7 @@ esp_err_t hal_eht_init()
     tcpip_adapter_init();
     
     eth_config_t config = phy_lan8720_default_ethernet_config;
-    config.mac_mode=ETH_MODE_RMII_INT_50MHZ_CLK;
+    //config.mac_mode=ETH_MODE_RMII_INT_50MHZ_CLK;
     config.gpio_config = eth_gpio_config_rmii;
     config.tcpip_input = tcpip_adapter_eth_input;
 

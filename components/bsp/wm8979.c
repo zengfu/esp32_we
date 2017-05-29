@@ -125,7 +125,7 @@ void wm8979_adc()
 void wm8979_dac()
 {
 	allreg[WM8978_POWER_MANAGEMENT_3] |=bit0|bit1; //dac left and right enable
-	allreg[WM8978_DAC_CONTROL] |=bit2|bit3; //auto mute and 128x oversample
+	allreg[WM8978_DAC_CONTROL] |=bit3; //128x oversample
 }
 void wm8979_output_mix()
 {
@@ -139,8 +139,8 @@ void wm8979_lout1()
 }
 void wm8979_lout2()
 {
-	allreg[WM8978_OUTPUT_CONTROL]|=bit2;
-	allreg[WM8978_POWER_MANAGEMENT_1]|=bit1;
+	allreg[WM8978_OUTPUT_CONTROL]|=bit2;//1.5 speek gain
+	//allreg[WM8978_POWER_MANAGEMENT_1]|=bit8;
 	allreg[WM8978_LOUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 	allreg[WM8978_ROUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 }
@@ -150,13 +150,15 @@ void wm8979_interface()
 	allreg[WM8978_CLOCKING]|=bit0; //the codec ic is master mode 
 	allreg[WM8978_CLOCKING]|=bit3|bit2;// 256/32=8
 	allreg[WM8978_CLOCKING]&=~(bit7|bit6|bit5); //mclk=mclk
+	allreg[WM8978_CLOCKING]|=bit7;
 	//allreg[WM8978_CLOCKING]&=~bit8;//mclk is the clk source
 }
 void wm8979_pll()
 {
 	allreg[WM8978_POWER_MANAGEMENT_1]|=bit5;//enable pll
 	allreg[WM8978_PLL_N]|=bit4;//mclk/2 =20m
-	allreg[WM8978_PLL_N]|=0x09;//n=9
+	allreg[WM8978_PLL_N]&=0xf0;//n=9
+	allreg[WM8978_PLL_N]|=0x09;
 	//k=EE009F
 	allreg[WM8978_PLL_K1]=0x3d;
 	allreg[WM8978_PLL_K2]=0x100;
