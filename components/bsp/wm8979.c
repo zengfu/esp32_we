@@ -105,7 +105,7 @@ void wm8979_input_pga ()
 {
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit2|bit3; //left channel adn right channel enable
 	allreg[WM8978_INPUT_CONTROL] &=~bit0;          //lip disconnect
-	allreg[WM8978_INPUT_CONTROL] |=~bit2;          //l2 disconnect
+	allreg[WM8978_INPUT_CONTROL] |=bit2;          //l2 disconnect
 	allreg[WM8978_LEFT_INP_PGA_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8; //35.25db
 }
 void wm8979_input_boost()
@@ -137,13 +137,30 @@ void wm8979_lout1()
 	allreg[WM8978_ROUT1_HP_CONTROL]  |=bit5|bit4|bit3|bit2|bit1|bit0|bit8;  //output 6db
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit8|bit7;
 }
+void wm8979_lout2()
+{
+	allreg[WM8978_OUTPUT_CONTROL]|=bit2;
+	allreg[WM8978_POWER_MANAGEMENT_1]|=bit1;
+	allreg[WM8978_LOUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
+	allreg[WM8978_ROUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
+}
 void wm8979_interface()
 {
 	allreg[WM8978_AUDIO_INTERFACE] &=~(bit6|bit5);//16bit
 	allreg[WM8978_CLOCKING]|=bit0; //the codec ic is master mode 
-	allreg[WM8978_CLOCKING]|=bit3|bit2;// mclk/32  16bit and 2 chanel
+	allreg[WM8978_CLOCKING]|=bit3|bit2;// 256/32=8
 	allreg[WM8978_CLOCKING]&=~(bit7|bit6|bit5); //mclk=mclk
-	allreg[WM8978_CLOCKING]&=~bit8;//mclk is the clk source
+	//allreg[WM8978_CLOCKING]&=~bit8;//mclk is the clk source
+}
+void wm8979_pll()
+{
+	allreg[WM8978_POWER_MANAGEMENT_1]|=bit5;//enable pll
+	allreg[WM8978_PLL_N]|=bit4;//mclk/2 =20m
+	allreg[WM8978_PLL_N]|=0x09;//n=9
+	//k=EE009F
+	allreg[WM8978_PLL_K1]=0x3d;
+	allreg[WM8978_PLL_K2]=0x100;
+	allreg[WM8978_PLL_K3]=0x9f;					
 }
 void wm8979_loopback()
 {
@@ -167,9 +184,10 @@ void wm8979_init()
 	wm8979_adc();
 	wm8979_dac();
 	wm8979_output_mix();
-	wm8979_lout1();
+	wm8979_lout2();
+	wm8979_pll();
 	wm8979_interface();
-	wm8979_interface();
+	//wm8979_loopback();
 	wm8978_write_dump();
 }
 

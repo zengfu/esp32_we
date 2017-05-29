@@ -1,6 +1,8 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
 #include "hal_i2s.h"
+#include "soc/io_mux_reg.h"
+#include "soc/soc.h"
 
 void hal_i2s_init(uint8_t i2s_num,uint32_t rate,uint8_t bits,uint8_t ch)
 {
@@ -31,7 +33,16 @@ void hal_i2s_init(uint8_t i2s_num,uint32_t rate,uint8_t bits,uint8_t ch)
     i2s_set_pin(i2s_num, &pin_config);
     //clk out
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
+    //REG_SET_FIELD(PIN_CTRL,CLK_OUT1, 0);
     //i2s_set_clk(i2s_num, rate, bits, ch);
+}
+int hal_i2s_read(uint8_t i2s_num,char* dest,size_t size,TickType_t timeout)
+{
+    return i2s_read_bytes(i2s_num,  dest, size, timeout);
+}
+int hal_i2s_write(uint8_t i2s_num,char* dest,size_t size,TickType_t timeout)
+{
+    return i2s_write_bytes(i2s_num,  dest, size, timeout);
 }
 
 
