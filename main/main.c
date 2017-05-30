@@ -49,7 +49,7 @@ void app_main()
 {
     WAV_HEADER wav_head;
     esp_event_loop_init(NULL, NULL);
-    char* samples_data = malloc(100);
+    uint8_t* samples_data = malloc(100);
     hal_i2c_init(0,5,17);
     uint8_t data=0;
     esp_err_t err;

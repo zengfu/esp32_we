@@ -12,6 +12,7 @@
 #define bit6  0x040 
 #define bit7  0x080 
 #define bit8  0x100
+/*
 static uint16_t allreg[]={
 	0xffff,   //software reset
  	0x0000,   //power manage 1 
@@ -71,6 +72,17 @@ static uint16_t allreg[]={
 	0x0039,   //rout2 volume ctrl
 	0x0001,   //out3 mix ctrl
 	0x0001,    //out4 mix ctrl
+};*/
+static uint16_t allreg[58]=
+{
+	0X0000,0X0000,0X0000,0X0000,0X0050,0X0000,0X0140,0X0000,
+	0X0000,0X0000,0X0000,0X00FF,0X00FF,0X0000,0X0100,0X00FF,
+	0X00FF,0X0000,0X012C,0X002C,0X002C,0X002C,0X002C,0X0000,
+	0X0032,0X0000,0X0000,0X0000,0X0000,0X0000,0X0000,0X0000,
+	0X0038,0X000B,0X0032,0X0000,0X0008,0X000C,0X0093,0X00E9,
+	0X0000,0X0000,0X0000,0X0000,0X0003,0X0010,0X0010,0X0100,
+	0X0100,0X0002,0X0001,0X0001,0X0039,0X0039,0X0039,0X0039,
+	0X0001,0X0001
 };
 
 	
@@ -92,9 +104,10 @@ static esp_err_t wm8978_write_dump()
 	esp_err_t err;
 	for (int i=0;i<WM8978_CACHEREGNUM;i++)
 	{	
-		if(allreg[i]==0xffff)
-			continue;
+		// if(allreg[i]==0xffff)
+		// 	continue;
 		err=wm8978_write_reg(0,i,allreg[i]);
+		printf("%d:%0x\n",i,allreg[i]);
 		if (err!=ESP_OK)
 			return err;
 	}
@@ -115,7 +128,7 @@ void wm8979_input_boost()
 
 void wm8979_bias()
 {
-	allreg[WM8978_POWER_MANAGEMENT_1] |=bit4; //enable bias
+	allreg[WM8978_POWER_MANAGEMENT_1] |=bit3; //enable bias
 }
 void wm8979_adc()
 {
@@ -139,10 +152,19 @@ void wm8979_lout1()
 }
 void wm8979_lout2()
 {
+	allreg[WM8978_POWER_MANAGEMENT_3]|=bit5|bit6;
 	allreg[WM8978_OUTPUT_CONTROL]|=bit2;//1.5 speek gain
-	//allreg[WM8978_POWER_MANAGEMENT_1]|=bit8;
+	allreg[WM8978_POWER_MANAGEMENT_1]|=bit8;
 	allreg[WM8978_LOUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 	allreg[WM8978_ROUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
+}
+void wm8979_eq()
+{
+	allreg[WM8978_EQ1]&=~0x1f;
+	allreg[WM8978_EQ2]&=~0x1f;
+	allreg[WM8978_EQ3]&=~0x1f;
+	allreg[WM8978_EQ4]&=~0x1f;
+	allreg[WM8978_EQ5]&=~0x1f;
 }
 void wm8979_interface()
 {
@@ -187,6 +209,7 @@ void wm8979_init()
 	wm8979_dac();
 	wm8979_output_mix();
 	wm8979_lout2();
+	wm8979_eq();
 	wm8979_pll();
 	wm8979_interface();
 	//wm8979_loopback();
