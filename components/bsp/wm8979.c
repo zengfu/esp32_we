@@ -155,6 +155,7 @@ void wm8979_lout2()
 	allreg[WM8978_POWER_MANAGEMENT_3]|=bit5|bit6;
 	allreg[WM8978_OUTPUT_CONTROL]|=bit2;//1.5 speek gain
 	allreg[WM8978_POWER_MANAGEMENT_1]|=bit8;
+	allreg[WM8978_BEEP_CONTROL]|=bit4;
 	allreg[WM8978_LOUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 	allreg[WM8978_ROUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 }
@@ -215,4 +216,14 @@ void wm8979_init()
 	//wm8979_loopback();
 	wm8978_write_dump();
 }
-
+void wm8978_adc_init()
+{
+	static uint8_t init;
+	if init==0{
+		
+	}
+}
+void wm8978_speaker_init()
+{
+	//dac
+}

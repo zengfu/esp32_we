@@ -23,7 +23,6 @@
 #include "hal_eth.h"
 #include "esp_log.h"
 
-static const char *TAG = "eth_example";
 typedef struct 
 {
     char rld[4];    //riff 标志符号
@@ -49,9 +48,8 @@ void app_main()
 {
     WAV_HEADER wav_head;
     esp_event_loop_init(NULL, NULL);
-    uint8_t* samples_data = malloc(100);
+    char* samples_data = malloc(100);
     hal_i2c_init(0,5,17);
-    uint8_t data=0;
     esp_err_t err;
     int cnt = 0;
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
@@ -89,6 +87,7 @@ void app_main()
     printf("channels:%d,frequency:%d,bit:%d\n",channels,frequency,bit);
     hal_i2s_init(0,48000,16,2);
     wm8979_init();
+    //test
     //err=hal_eht_init();
     int wlen;
     while(1) {
