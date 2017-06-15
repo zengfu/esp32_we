@@ -64,7 +64,11 @@
 
 
 
-void wm8979_init();
-
+void wm8978_init();
+void wm8978_speaker_init();
+void wm8978_dac_volume(uint16_t volume);
+void wm8978_mic_init();
+void wm8978_write_dump();
+void wm8978_adc_volume(uint16_t volume);
 #endif
 

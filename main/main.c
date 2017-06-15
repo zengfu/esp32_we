@@ -12,7 +12,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include "wm8979.h"
+#include "wm8978.h"
 #include "esp_vfs_fat.h"
 #include "driver/sdmmc_host.h"
 #include "driver/sdmmc_defs.h"
@@ -48,7 +48,7 @@ void app_main()
 {
     WAV_HEADER wav_head;
     esp_event_loop_init(NULL, NULL);
-    char* samples_data = malloc(100);
+    char* samples_data = malloc(1024);
     hal_i2c_init(0,5,17);
     esp_err_t err;
     int cnt = 0;
@@ -86,29 +86,32 @@ void app_main()
     int datalen;
     printf("channels:%d,frequency:%d,bit:%d\n",channels,frequency,bit);
     hal_i2s_init(0,48000,16,2);
-    wm8979_init();
+    wm8978_init();
+    wm8978_speaker_init();
+    wm8978_dac_volume(220);
+    wm8978_adc_volume(200);
+    wm8978_mic_init();
+    wm8978_write_dump();
+
     //test
     //err=hal_eht_init();
     int wlen;
     while(1) {
-        printf("cnt: %d\n", cnt++);
+        
         //vTaskDelay(1000 / portTICK_RATE_MS);
         datalen= wav_head.wSampleLength;
         while(datalen){
-            rlen=fread(samples_data,1,100,f);
+            //rlen=fread(samples_data,1,100,f);
 
-            if(rlen!=100){
-                printf("read file Failed");
-                return;
-            }
-            wlen=hal_i2s_write(0,samples_data,100,1000);
-            if(wlen!=100){
-                printf("i2s write faliled");
-                return;
-            }
-            datalen-=rlen;
+            // if(rlen!=100){
+            //     printf("read file Failed");
+            //     return;
+            // }
+            hal_i2s_read(0,samples_data,1024,1000);
+            hal_i2s_write(0,samples_data,1024,1000);
+            
         }
-        fseek(f,sizeof(wav_head),SEEK_SET);
+        //fseek(f,sizeof(wav_head),SEEK_SET);
         // err=hal_i2c_master_mem_write(0,0x1a,0x02,&data,1);
         // if(err!=ESP_OK)
         //     printf("write faliled:%d\n",err);

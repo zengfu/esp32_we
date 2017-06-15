@@ -1,5 +1,5 @@
 #include "hal_i2c.h"
-#include "wm8979.h"
+#include "wm8978.h"
 
 
 
@@ -99,7 +99,7 @@ static esp_err_t wm8978_write_reg(i2c_port_t i2c_num,uint8_t reg,uint16_t data)
 }
 
 
-static esp_err_t wm8978_write_dump()
+void wm8978_write_dump()
 {
 	esp_err_t err;
 	for (int i=0;i<WM8978_CACHEREGNUM;i++)
@@ -109,48 +109,49 @@ static esp_err_t wm8978_write_dump()
 		err=wm8978_write_reg(0,i,allreg[i]);
 		printf("%d:%0x\n",i,allreg[i]);
 		if (err!=ESP_OK)
-			return err;
+			return ;
 	}
-	return err;
 }
 
-void wm8979_input_pga ()
+void wm8978_input_pga ()
 {
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit2|bit3; //left channel adn right channel enable
-	allreg[WM8978_INPUT_CONTROL] &=~bit0;          //lip disconnect
-	allreg[WM8978_INPUT_CONTROL] |=bit2;          //l2 disconnect
+	//allreg[WM8978_INPUT_CONTROL] &=~bit0;          //lip disconnect
+	//allreg[WM8978_INPUT_CONTROL] |=bit2;          //l2 disconnect
 	allreg[WM8978_LEFT_INP_PGA_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8; //35.25db
+	allreg[WM8978_RIGHT_INP_PGA_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8; //35.25db
 }
-void wm8979_input_boost()
+void wm8978_input_boost()
 {
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit4|bit5; //enable boost stage 20db,now 55.25db
 }
 
-void wm8979_bias()
+void wm8978_bias()
 {
-	allreg[WM8978_POWER_MANAGEMENT_1] |=bit3; //enable bias
+	allreg[WM8978_POWER_MANAGEMENT_1] |=bit4|bit3; //enable bias
+	//allreg[WM8978_INPUT_CONTROL]|=bit8;
 }
-void wm8979_adc()
+void wm8978_adc()
 {
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit0|bit1; //adc left and right enable
 	allreg[WM8978_ADC_CONTROL] |=bit3;    //128x oversample
 }
-void wm8979_dac()
+void wm8978_dac()
 {
 	allreg[WM8978_POWER_MANAGEMENT_3] |=bit0|bit1; //dac left and right enable
 	allreg[WM8978_DAC_CONTROL] |=bit3; //128x oversample
 }
-void wm8979_output_mix()
+void wm8978_output_mix()
 {
 	allreg[WM8978_POWER_MANAGEMENT_3] |=bit2|bit3;//enable right and left mixer;
 }
-void wm8979_lout1()
+void wm8978_lout1()
 {
 	allreg[WM8978_LOUT1_HP_CONTROL]  |=bit5|bit4|bit3|bit2|bit1|bit0|bit8;  //output 6db
 	allreg[WM8978_ROUT1_HP_CONTROL]  |=bit5|bit4|bit3|bit2|bit1|bit0|bit8;  //output 6db
 	allreg[WM8978_POWER_MANAGEMENT_2] |=bit8|bit7;
 }
-void wm8979_lout2()
+void wm8978_lout2()
 {
 	allreg[WM8978_POWER_MANAGEMENT_3]|=bit5|bit6;
 	allreg[WM8978_OUTPUT_CONTROL]|=bit2;//1.5 speek gain
@@ -159,7 +160,7 @@ void wm8979_lout2()
 	allreg[WM8978_LOUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 	allreg[WM8978_ROUT2_SPK_CONTROL]|=bit5|bit4|bit3|bit2|bit1|bit0|bit8;
 }
-void wm8979_eq()
+void wm8978_eq()
 {
 	allreg[WM8978_EQ1]&=~0x1f;
 	allreg[WM8978_EQ2]&=~0x1f;
@@ -167,7 +168,7 @@ void wm8979_eq()
 	allreg[WM8978_EQ4]&=~0x1f;
 	allreg[WM8978_EQ5]&=~0x1f;
 }
-void wm8979_interface()
+void wm8978_interface()
 {
 	allreg[WM8978_AUDIO_INTERFACE] &=~(bit6|bit5);//16bit
 	allreg[WM8978_CLOCKING]|=bit0; //the codec ic is master mode 
@@ -176,7 +177,7 @@ void wm8979_interface()
 	allreg[WM8978_CLOCKING]|=bit7;
 	//allreg[WM8978_CLOCKING]&=~bit8;//mclk is the clk source
 }
-void wm8979_pll()
+void wm8978_pll()
 {
 	allreg[WM8978_POWER_MANAGEMENT_1]|=bit5;//enable pll
 	allreg[WM8978_PLL_N]|=bit4;//mclk/2 =20m
@@ -187,7 +188,7 @@ void wm8979_pll()
 	allreg[WM8978_PLL_K2]=0x100;
 	allreg[WM8978_PLL_K3]=0x9f;					
 }
-void wm8979_loopback()
+void wm8978_loopback()
 {
 	allreg[WM8978_COMPANDING_CONTROL]|=bit0; //start loopback
 }
@@ -201,29 +202,44 @@ IP PGA->IP BOOST->ADC->ADC FILTERS
 
 
 */   
-void wm8979_init()
+void wm8978_init()
 {
-	wm8979_input_pga ();
-	wm8979_input_boost();
-	wm8979_bias();
-	wm8979_adc();
-	wm8979_dac();
-	wm8979_output_mix();
-	wm8979_lout2();
-	wm8979_eq();
-	wm8979_pll();
-	wm8979_interface();
-	//wm8979_loopback();
-	wm8978_write_dump();
+	wm8978_input_pga ();
+	wm8978_input_boost();
+	//wm8978_bias();
+	wm8978_adc();
+	wm8978_dac();
+	wm8978_output_mix();
+	//wm8978_lout2();
+	wm8978_eq();
+	wm8978_pll();
+	wm8978_interface();
+	wm8978_loopback();
+	//
 }
-void wm8978_adc_init()
-{
-	static uint8_t init;
-	if init==0{
-		
-	}
-}
-void wm8978_speaker_init()
-{
+
+void wm8978_speaker_init(){
 	//dac
+	wm8978_lout2();
+	//wm8978_write_dump();
 }
+void wm8978_mic_init(){
+	wm8978_bias();
+}
+void wm8978_dac_volume(uint16_t volume){
+	if(volume>255)
+		volume=255;
+	//wm8978_write_reg(0,WM8978_RIGHT_DAC_DIGITAL_VOLUME,a);
+	allreg[WM8978_RIGHT_DAC_DIGITAL_VOLUME]=volume|bit8;
+	allreg[WM8978_LEFT_DAC_DIGITAL_VOLUME]=volume|bit8;
+	//wm8978_write_reg(0,WM8978_LEFT_DAC_DIGITAL_VOLUME,a);
+}
+void wm8978_adc_volume(uint16_t volume){
+	if(volume>255)
+		volume=255;
+	//wm8978_write_reg(0,WM8978_RIGHT_DAC_DIGITAL_VOLUME,a);
+	allreg[WM8978_RIGHT_ADC_DIGITAL_VOLUME]=volume|bit8;
+	allreg[WM8978_LEFT_ADC_DIGITAL_VOLUME]=volume|bit8;
+	//wm8978_write_reg(0,WM8978_LEFT_DAC_DIGITAL_VOLUME,a);
+}
+
