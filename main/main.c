@@ -23,30 +23,11 @@
 #include "hal_eth.h"
 #include "esp_log.h"
 
-typedef struct 
-{
-    char rld[4];    //riff 标志符号
-    int  rLen;      //
-    char wld[4];    //格式类型（wave）
-    char fld[4];    //"fmt"
- 
-    int fLen;   //sizeof(wave format matex)
- 
-    short wFormatTag;   //编码格式
-    short wChannels;    //声道数
-    int   nSamplesPersec;  //采样频率
-    int   nAvgBitsPerSample;//WAVE文件采样大小
-    short wBlockAlign; //块对齐
-    short wBitsPerSample;   //WAVE文件采样大小
-
-    char dld[4];        //”data“
-    int  wSampleLength; //音频数据的大小
- }WAV_HEADER;
 
 
 void app_main()
 {
-    WAV_HEADER wav_head;
+    
     esp_event_loop_init(NULL, NULL);
     char* samples_data = malloc(1024);
     hal_i2c_init(0,5,17);
@@ -69,48 +50,53 @@ void app_main()
         return;
     }
     sdmmc_card_print_info(stdout, card);
-    FILE* f = fopen("/sdcard/test.wav", "r");
-    if (f == NULL) {
-        printf("Failed to open file for writing");
-        return;
-    }
-    //fprintf(f, "Hello %s!\n", card->cid.name);
-    int rlen=fread(&wav_head,1,sizeof(wav_head),f);
-    if(rlen!=sizeof(wav_head)){
-        printf("%s\n","read faliled");
-        return;
-    }
-    int channels = wav_head.wChannels;
-    int frequency = wav_head.nSamplesPersec;
-    int bit = wav_head.wBitsPerSample;
-    int datalen;
-    printf("channels:%d,frequency:%d,bit:%d\n",channels,frequency,bit);
+    
+    
+    
     hal_i2s_init(0,48000,16,2);
-    wm8978_init();
-    wm8978_speaker_init();
-    wm8978_dac_volume(220);
-    wm8978_adc_volume(200);
-    wm8978_mic_init();
-    wm8978_write_dump();
+    WM8978_Init();
+    WM8978_ADDA_Cfg(1,1); 
+    WM8978_Input_Cfg(1,0,0);     
+    WM8978_Output_Cfg(1,0); 
+    WM8978_MIC_Gain(46);
+    WM8978_SPKvol_Set(50);
+    WM8978_EQ_3D_Dir(1);
+    WM8978_EQ1_Set(3,24);
+    WM8978_EQ2_Set(3,24);
+    WM8978_EQ3_Set(3,24);
+    WM8978_EQ4_Set(3,24);
+    WM8978_EQ5_Set(3,24);
+    // wm8978_init();
+    // wm8978_speaker_init();
+    // wm8978_dac_volume(220);
+    // wm8978_adc_volume(200);
+    // wm8978_mic_init();
+    // wm8978_write_dump();
 
     //test
     //err=hal_eht_init();
     int wlen;
     while(1) {
-        
         //vTaskDelay(1000 / portTICK_RATE_MS);
-        datalen= wav_head.wSampleLength;
-        while(datalen){
-            //rlen=fread(samples_data,1,100,f);
-
+        //datalen= wav_head.wSampleLength;
+       
+            //
+            aplay("/sdcard/test.wav");
+            printf("%s\n", "ok!");
             // if(rlen!=100){
             //     printf("read file Failed");
             //     return;
             // }
-            hal_i2s_read(0,samples_data,1024,1000);
+            wlen=hal_i2s_read(0,samples_data,1024,1000);
+            //printf("wlen:%d\n",wlen );
             hal_i2s_write(0,samples_data,1024,1000);
+            //printf("%d\n", cnt++);
+            // for(int i=0;i<1024;i++){
+            //     if(samples_data[i]!=0)
+            //         printf("%d\n",samples_data[i] );
+            // }
             
-        }
+        
         //fseek(f,sizeof(wav_head),SEEK_SET);
         // err=hal_i2c_master_mem_write(0,0x1a,0x02,&data,1);
         // if(err!=ESP_OK)
