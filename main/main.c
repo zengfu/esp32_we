@@ -23,7 +23,6 @@
 #include "hal_eth.h"
 #include "esp_log.h"
 
-static const char *TAG = "eth_example";
 typedef struct 
 {
     char rld[4];    //riff 标志符号
