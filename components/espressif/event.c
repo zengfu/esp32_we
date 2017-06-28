@@ -48,8 +48,9 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     	xEventGroupSetBits(eth_event_group, ETH_CONNECTED_BIT);
     	break;
     case SYSTEM_EVENT_ETH_DISCONNECTED:
-    	xEventGroupClearBits(eth_event_group, ETH_CONNECTED_BIT);
-    	xEventGroupClearBits(eth_event_group, ETH_GOTIP_BIT);
+    	//xEventGroupClearBits(eth_event_group, ETH_CONNECTED_BIT);
+    	//xEventGroupClearBits(eth_event_group, ETH_GOTIP_BIT);
+        xEventGroupSetBits(eth_event_group, ETH_DISCONNECTED_BIT);
     case  SYSTEM_EVENT_ETH_GOT_IP:
     	xEventGroupSetBits(eth_event_group, ETH_GOTIP_BIT);
     default:

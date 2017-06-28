@@ -72,7 +72,7 @@ esp_err_t create_tcp_server(int port)
     }
     /*connection established，now can send/recv*/
     ESP_LOGI(TAG, "tcp connection established!");
-    return server_socket;
+    return ESP_OK;
 }
 //use this esp32 as a tcp client. return ESP_OK:success ESP_FAIL:error
 esp_err_t create_tcp_client(const char*ip,int port)
@@ -93,5 +93,5 @@ esp_err_t create_tcp_client(const char*ip,int port)
 	return ESP_FAIL;
     }
     ESP_LOGI(TAG, "connect to server success!");
-    return connect_socket;
+    return ESP_OK;
 }

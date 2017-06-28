@@ -12,95 +12,63 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "freertos/event_groups.h"
 #include "wm8978.h"
 #include "esp_vfs_fat.h"
 #include "driver/sdmmc_host.h"
 #include "driver/sdmmc_defs.h"
 #include "sdmmc_cmd.h"
 #include "esp_event_loop.h"
-#include "hal_i2c.h"
-#include "hal_i2s.h"
-#include "hal_eth.h"
 #include "esp_log.h"
+#include <sys/socket.h>
 
+#include "eth.h"
+#include "event.h"
+#include "tcp.h"
 
+#define GPIO_OUTPUT_IO_0    16
+#define GPIO_OUTPUT_PIN_SEL  ((1<<GPIO_OUTPUT_IO_0))
 
+#define TAG "main:"
 void app_main()
 {
-    
-    esp_event_loop_init(NULL, NULL);
-    char* samples_data = malloc(1024);
-    hal_i2c_init(0,5,17);
-    esp_err_t err;
-    int cnt = 0;
-    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
-    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = true,
-        .max_files = 5
-    };
-    sdmmc_card_t* card;
-    err = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
-    if (err != ESP_OK) {
-        if (err == ESP_FAIL) {
-            printf("Failed to mount filesystem. If you want the card to be formatted, set format_if_mount_failed = true.");
-        } else {
-            printf("Failed to initialize the card (%d). Make sure SD card lines have pull-up resistors in place.", err);
+    event_engine_init();
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    io_conf.pull_down_en = 0;
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+    tcpip_adapter_init();
+    eth_init();
+    //do{
+        gpio_set_level(GPIO_OUTPUT_IO_0, 0);
+        xEventGroupWaitBits(eth_event_group,ETH_CONNECTED_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
+        ESP_LOGI(TAG,"the eth link up");
+        xEventGroupWaitBits(eth_event_group,ETH_GOTIP_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
+        //esp_err_t tcpip_adapter_get_ip_info(tcpip_adapter_if_t tcpip_if, tcpip_adapter_ip_info_t *ip_info);
+        gpio_set_level(GPIO_OUTPUT_IO_0, 1);
+        tcpip_adapter_ip_info_t ip;
+        memset(&ip, 0, sizeof(tcpip_adapter_ip_info_t));
+        if (tcpip_adapter_get_ip_info(ESP_IF_ETH, &ip) == 0) {
+            ESP_LOGI(TAG, "~~~~~~~~~~~");
+            ESP_LOGI(TAG, "ETHIP:"IPSTR, IP2STR(&ip.ip));
+            ESP_LOGI(TAG, "ETHPMASK:"IPSTR, IP2STR(&ip.netmask));
+            ESP_LOGI(TAG, "ETHPGW:"IPSTR, IP2STR(&ip.gw));
+            ESP_LOGI(TAG, "~~~~~~~~~~~");
         }
+        //xEventGroupWaitBits(eth_event_group,ETH_DISCONNECTED_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
+    //}while(1);
+    if(create_tcp_server(8080)!=ESP_OK){
         return;
     }
-    sdmmc_card_print_info(stdout, card);
-    
-    
-    
-    hal_i2s_init(0,48000,16,2);
-    WM8978_Init();
-    WM8978_ADDA_Cfg(1,1); 
-    WM8978_Input_Cfg(1,0,0);     
-    WM8978_Output_Cfg(1,0); 
-    WM8978_MIC_Gain(46);
-    WM8978_SPKvol_Set(50);
-    WM8978_EQ_3D_Dir(1);
-    WM8978_EQ1_Set(3,24);
-    WM8978_EQ2_Set(3,24);
-    WM8978_EQ3_Set(3,24);
-    WM8978_EQ4_Set(3,24);
-    WM8978_EQ5_Set(3,24);
-    // wm8978_init();
-    // wm8978_speaker_init();
-    // wm8978_dac_volume(220);
-    // wm8978_adc_volume(200);
-    // wm8978_mic_init();
-    // wm8978_write_dump();
-
-    //test
-    //err=hal_eht_init();
-    int wlen;
-    while(1) {
-        //vTaskDelay(1000 / portTICK_RATE_MS);
-        //datalen= wav_head.wSampleLength;
-       
-            //
-            aplay("/sdcard/test.wav");
-            printf("%s\n", "ok!");
-            // if(rlen!=100){
-            //     printf("read file Failed");
-            //     return;
-            // }
-            wlen=hal_i2s_read(0,samples_data,1024,1000);
-            //printf("wlen:%d\n",wlen );
-            hal_i2s_write(0,samples_data,1024,1000);
-            //printf("%d\n", cnt++);
-            // for(int i=0;i<1024;i++){
-            //     if(samples_data[i]!=0)
-            //         printf("%d\n",samples_data[i] );
-            // }
-            
-        
-        //fseek(f,sizeof(wav_head),SEEK_SET);
-        // err=hal_i2c_master_mem_write(0,0x1a,0x02,&data,1);
-        // if(err!=ESP_OK)
-        //     printf("write faliled:%d\n",err);
+    char databuff[100]={0};
+    int len=0;
+    while(1){
+        len = recv(connect_socket, databuff, 100, 0);
+        printf("%s\n",databuff);
+        memset(databuff,0,len);
     }
 }
 

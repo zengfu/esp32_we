@@ -21,6 +21,7 @@
 
 #include "eth_phy/phy_lan8720.h"
 #include "eth.h"
+#include "event.h"
 
 
 
@@ -44,6 +45,7 @@ static void eth_gpio_config_rmii(void)
     phy_rmii_smi_configure_pins(PIN_SMI_MDC, PIN_SMI_MDIO);
 }
 void eth_init(){
+    eth_event_group = xEventGroupCreate();
     esp_err_t ret = ESP_OK;
     //tcpip_adapter_init();
     //esp_event_loop_init(NULL, NULL);
