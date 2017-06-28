@@ -14,7 +14,7 @@
 
 /* Dimensions the buffer into which input characters are placed. */
 #define cmdMAX_INPUT_SIZE	34
-
+static char cInChar[256]={0};
 void vTelnetTask( void *pvParameters ){
 	int32_t lSocket, lClientFd, lBytes, lAddrLen = sizeof( struct sockaddr_in );
 	struct sockaddr_in sLocalAddr;
@@ -31,7 +31,7 @@ void vTelnetTask( void *pvParameters ){
 		/* Obtain the address of the output buffer.  Note there is no mutual
 		exclusion on this buffer as it is assumed only one command console
 		interface will be used at any one time. */
-		pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+		char * pcOutputString = FreeRTOS_CLIGetOutputBuffer();
 
 		memset((char *)&sLocalAddr, 0, sizeof(sLocalAddr));
 		sLocalAddr.sin_family = AF_INET;
@@ -39,14 +39,13 @@ void vTelnetTask( void *pvParameters ){
 		sLocalAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		sLocalAddr.sin_port = ntohs( ( ( uint16_t ) 23 ) );
 
-		if( lwip_bind( lSocket, ( struct sockaddr *) &sLocalAddr, sizeof( sLocalAddr ) ) < 0 ) 
-		{
+		if( lwip_bind( lSocket, ( struct sockaddr *) &sLocalAddr, sizeof( sLocalAddr ) ) < 0 ) {
 			lwip_close( lSocket );
 			vTaskDelete( NULL );
 		}
 
-		if( lwip_listen( lSocket, 20 ) != 0 )
-		{
+		if( lwip_listen( lSocket, 20 ) != 0 ){
+		
 			lwip_close( lSocket );
 			vTaskDelete( NULL );
 		}
@@ -61,7 +60,13 @@ void vTelnetTask( void *pvParameters ){
 				lwip_send( lClientFd, pcWelcomeMessage, strlen( ( const char * ) pcWelcomeMessage ), 0 );
 				do{
 					lBytes = lwip_recv( lClientFd, &cInChar, sizeof( cInChar ), 0 );
-				}
+					if(lBytes>0){
+						for(int i=0;i<lBytes;i++){
+							printf("%x\n", cInChar[i]);
+						}
+						
+					}
+				}while(1);
 			}
 		}
 	}

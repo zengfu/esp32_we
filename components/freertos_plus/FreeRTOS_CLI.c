@@ -56,7 +56,16 @@ fixed address then set configAPPLICATION_PROVIDES_cOutputBuffer to 1 in
 FreeRTOSConfig.h, then declare an array with the following name and size in 
 one of the application files:
 	char cOutputBuffer[ configCOMMAND_INT_MAX_OUTPUT_SIZE ];
+
+
 */
+static uint8_t mux_init=0;
+static portMUX_TYPE xCliMutex = portMUX_INITIALIZER_UNLOCKED;
+
+#ifndef configCOMMAND_INT_MAX_OUTPUT_SIZE
+	#define configCOMMAND_INT_MAX_OUTPUT_SIZE 256
+#endif
+
 #ifndef configAPPLICATION_PROVIDES_cOutputBuffer
 	#define configAPPLICATION_PROVIDES_cOutputBuffer 0
 #endif
@@ -132,7 +141,11 @@ BaseType_t xReturn = pdFAIL;
 
 	if( pxNewListItem != NULL )
 	{
-		taskENTER_CRITICAL();
+		if(mux_init==0){
+			vPortCPUInitializeMutex(&xCliMutex);
+			mux_init=1;
+		}
+		taskENTER_CRITICAL(&xCliMutex);
 		{
 			/* Reference the command being registered from the newly created
 			list item. */
@@ -149,7 +162,7 @@ BaseType_t xReturn = pdFAIL;
 			/* Set the end of list marker to the new list item. */
 			pxLastCommandInList = pxNewListItem;
 		}
-		taskEXIT_CRITICAL();
+		taskEXIT_CRITICAL(&xCliMutex);
 
 		xReturn = pdPASS;
 	}
