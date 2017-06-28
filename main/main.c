@@ -25,6 +25,7 @@
 #include "eth.h"
 #include "event.h"
 #include "tcp.h"
+#include "telnet.h"
 
 #define GPIO_OUTPUT_IO_0    16
 #define GPIO_OUTPUT_PIN_SEL  ((1<<GPIO_OUTPUT_IO_0))
@@ -60,15 +61,14 @@ void app_main()
         }
         //xEventGroupWaitBits(eth_event_group,ETH_DISCONNECTED_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
     //}while(1);
-    if(create_tcp_server(8080)!=ESP_OK){
-        return;
-    }
-    char databuff[100]={0};
-    int len=0;
+    //if(create_tcp_server(8080)!=ESP_OK){
+      //  return;
+    //}
+    xTaskCreate(vTelnetTask, "telnet_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    //char databuff[100]={0};
+    //int len=0;
     while(1){
-        len = recv(connect_socket, databuff, 100, 0);
-        printf("%s\n",databuff);
-        memset(databuff,0,len);
+       vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
 
