@@ -171,7 +171,7 @@ BaseType_t xReturn = pdFAIL;
 }
 /*-----------------------------------------------------------*/
 
-BaseType_t FreeRTOS_CLIProcessCommand( const char * const pcCommandInput, char * pcWriteBuffer, size_t xWriteBufferLen  )
+BaseType_t FreeRTOS_CLIProcessCommand( const char * pcCommandInput, char * pcWriteBuffer, size_t xWriteBufferLen  )
 {
 static const CLI_Definition_List_Item_t *pxCommand = NULL;
 BaseType_t xReturn = pdTRUE;

@@ -82,7 +82,7 @@ BaseType_t FreeRTOS_CLIRegisterCommand( const CLI_Command_Definition_t * const p
  * pcCmdIntProcessCommand is not reentrant.  It must not be called from more
  * than one task - or at least - by more than one task at a time.
  */
-BaseType_t FreeRTOS_CLIProcessCommand( const char * const pcCommandInput, char * pcWriteBuffer, size_t xWriteBufferLen  );
+BaseType_t FreeRTOS_CLIProcessCommand( const char * pcCommandInput, char * pcWriteBuffer, size_t xWriteBufferLen  );
 
 /*-----------------------------------------------------------*/
 
