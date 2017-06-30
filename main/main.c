@@ -27,12 +27,17 @@
 #include "tcp.h"
 #include "telnet.h"
 
+#include "hal_i2c.h"
+#include "hal_i2s.h"
+#include "wm8978.h"
+
 #define GPIO_OUTPUT_IO_0    16
 #define GPIO_OUTPUT_PIN_SEL  ((1<<GPIO_OUTPUT_IO_0))
 
 #define TAG "main:"
 void app_main()
 {
+    esp_err_t err;
     event_engine_init();
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
@@ -42,7 +47,39 @@ void app_main()
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
     tcpip_adapter_init();
-    eth_init();
+    hal_i2c_init(0,5,17);
+    hal_i2s_init(0,48000,16,2);
+    WM8978_Init();
+    WM8978_ADDA_Cfg(1,1); 
+    WM8978_Input_Cfg(1,0,0);     
+    WM8978_Output_Cfg(1,0); 
+    WM8978_MIC_Gain(46);
+    WM8978_SPKvol_Set(100);
+    WM8978_EQ_3D_Dir(1);
+    WM8978_EQ1_Set(3,24);
+    WM8978_EQ2_Set(3,24);
+    WM8978_EQ3_Set(3,24);
+    WM8978_EQ4_Set(3,24);
+    WM8978_EQ5_Set(3,24);
+
+    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
+    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+        .format_if_mount_failed = true,
+        .max_files = 5
+    };
+    sdmmc_card_t* card;
+    err = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
+    if (err != ESP_OK) {
+        if (err == ESP_FAIL) {
+            printf("Failed to mount filesystem. If you want the card to be formatted, set format_if_mount_failed = true.");
+        } else {
+            printf("Failed to initialize the card (%d). Make sure SD card lines have pull-up resistors in place.", err);
+        }
+        return;
+    }
+    sdmmc_card_print_info(stdout, card);
+    /*eth_init();
     //do{
         gpio_set_level(GPIO_OUTPUT_IO_0, 0);
         xEventGroupWaitBits(eth_event_group,ETH_CONNECTED_BIT,pdTRUE,pdTRUE,portMAX_DELAY);
@@ -67,8 +104,14 @@ void app_main()
     xTaskCreate(vTelnetTask, "telnet_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     //char databuff[100]={0};
     //int len=0;
+    */
+     
+    uint8_t cnt=0;
     while(1){
-       vTaskDelay(2000 / portTICK_PERIOD_MS);
+        gpio_set_level(GPIO_OUTPUT_IO_0, cnt%2);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        aplay("/sdcard/test.wav");
+        cnt++;
     }
 }
 
