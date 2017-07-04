@@ -45,8 +45,6 @@
 #include <stdint.h>
 
 /* FreeRTOS includes. */
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 /* Utils includes. */
 #include "FreeRTOS_CLI.h"
@@ -63,7 +61,7 @@ static uint8_t mux_init=0;
 static portMUX_TYPE xCliMutex = portMUX_INITIALIZER_UNLOCKED;
 
 #ifndef configCOMMAND_INT_MAX_OUTPUT_SIZE
-	#define configCOMMAND_INT_MAX_OUTPUT_SIZE 256
+	#define configCOMMAND_INT_MAX_OUTPUT_SIZE 1024
 #endif
 
 #ifndef configAPPLICATION_PROVIDES_cOutputBuffer
@@ -117,16 +115,11 @@ attempted.
 configAPPLICATION_PROVIDES_cOutputBuffer is provided to allow the application
 writer to provide their own cOutputBuffer declaration in cases where the
 buffer needs to be placed at a fixed address (rather than by the linker). */
-#if( configAPPLICATION_PROVIDES_cOutputBuffer == 0 )
-	static char cOutputBuffer[ configCOMMAND_INT_MAX_OUTPUT_SIZE ];
-#else
-	extern char cOutputBuffer[ configCOMMAND_INT_MAX_OUTPUT_SIZE ];
-#endif
 
 
 /*-----------------------------------------------------------*/
 
-BaseType_t FreeRTOS_CLIRegisterCommand( const CLI_Command_Definition_t * const pxCommandToRegister )
+BaseType_t FreeRTOS_CLIRegisterCommand( const CLI_Command_Definition_t * pxCommandToRegister )
 {
 static CLI_Definition_List_Item_t *pxLastCommandInList = &xRegisteredCommands;
 CLI_Definition_List_Item_t *pxNewListItem;
@@ -246,10 +239,6 @@ size_t xCommandStringLength;
 }
 /*-----------------------------------------------------------*/
 
-char *FreeRTOS_CLIGetOutputBuffer( void )
-{
-	return cOutputBuffer;
-}
 /*-----------------------------------------------------------*/
 
 const char *FreeRTOS_CLIGetParameter( const char *pcCommandString, UBaseType_t uxWantedParameter, BaseType_t *pxParameterStringLength )

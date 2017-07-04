@@ -11,10 +11,11 @@
 #include "FreeRTOS_CLI.h"
 
 #include "event.h"
+#include "cmd.h"
 
 /* Dimensions the buffer into which input characters are placed. */
 #define cmdMAX_INPUT_SIZE	34
-#define cmdMAX_OUTPUT_SIZE  256
+#define cmdMAX_OUTPUT_SIZE  1024
 static char outbuf[cmdMAX_OUTPUT_SIZE]={0};
 void vTelnetTask( void *pvParameters ){
 	int32_t lSocket, lClientFd, lBytes, lAddrLen = sizeof( struct sockaddr_in );
@@ -25,14 +26,12 @@ void vTelnetTask( void *pvParameters ){
 	portBASE_TYPE xReturned;
 	
 	(void) pvParameters;
-
+	CmdRegister();
 	lSocket = lwip_socket( AF_INET, SOCK_STREAM, 0 );
-
 	if( lSocket >= 0 ){
 		/* Obtain the address of the output buffer.  Note there is no mutual
 		exclusion on this buffer as it is assumed only one command console
 		interface will be used at any one time. */
-		char * pcOutputString = FreeRTOS_CLIGetOutputBuffer();
 
 		memset((char *)&sLocalAddr, 0, sizeof(sLocalAddr));
 		sLocalAddr.sin_family = AF_INET;
@@ -61,9 +60,16 @@ void vTelnetTask( void *pvParameters ){
 				lwip_send( lClientFd, pcWelcomeMessage, strlen( ( const char * ) pcWelcomeMessage ), 0 );
 				do{
 					lBytes = lwip_recv( lClientFd, cInputString, sizeof( cInputString ), 0 );
+					for(int i=lBytes-1;i>=0;i--){
+						if (cInputString[i]=='\n'||cInputString[i]=='\r'){
+							cInputString[i]='\0';
+						}else{
+							break;
+						}
+					}
 					printf("%s\n",cInputString );
 					do{
-						outbuf[ 0 ] = 0x00;
+						outbuf[0] = 0x00;
 						xReturned=FreeRTOS_CLIProcessCommand(cInputString,outbuf,cmdMAX_OUTPUT_SIZE);
 						lwip_send( lClientFd, outbuf, strlen(outbuf), 0 );
 					}

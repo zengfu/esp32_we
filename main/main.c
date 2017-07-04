@@ -26,6 +26,7 @@
 #include "event.h"
 #include "tcp.h"
 #include "telnet.h"
+//#include "cmd.h"
 
 #define GPIO_OUTPUT_IO_0    16
 #define GPIO_OUTPUT_PIN_SEL  ((1<<GPIO_OUTPUT_IO_0))
@@ -41,6 +42,7 @@ void app_main()
     io_conf.pull_down_en = 0;
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
+    
     tcpip_adapter_init();
     eth_init();
     //do{

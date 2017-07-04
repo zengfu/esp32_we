@@ -43,6 +43,11 @@
 #ifndef COMMAND_INTERPRETER_H
 #define COMMAND_INTERPRETER_H
 
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+
 /* The prototype to which callback functions used to process command line
 commands must comply.  pcWriteBuffer is a buffer into which the output from
 executing the command can be written, xWriteBufferLen is the length, in bytes of
@@ -97,7 +102,6 @@ BaseType_t FreeRTOS_CLIProcessCommand( const char * pcCommandInput, char * pcWri
  *
  * FreeRTOS_CLIGetOutputBuffer() returns the address of the output buffer.
  */
-char *FreeRTOS_CLIGetOutputBuffer( void );
 
 /*
  * Return a pointer to the xParameterNumber'th word in pcCommandString.
