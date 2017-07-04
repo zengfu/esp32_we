@@ -26,6 +26,7 @@
 #include "event.h"
 #include "tcp.h"
 #include "telnet.h"
+//#include "cmd.h"
 
 #include "hal_i2c.h"
 #include "hal_i2s.h"
@@ -46,6 +47,7 @@ void app_main()
     io_conf.pull_down_en = 0;
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
+    
     tcpip_adapter_init();
     hal_i2c_init(0,5,17);
     hal_i2s_init(0,48000,16,2);

@@ -11,27 +11,27 @@
 #include "FreeRTOS_CLI.h"
 
 #include "event.h"
+#include "cmd.h"
 
 /* Dimensions the buffer into which input characters are placed. */
 #define cmdMAX_INPUT_SIZE	34
-static char cInChar[256]={0};
+#define cmdMAX_OUTPUT_SIZE  1024
+static char outbuf[cmdMAX_OUTPUT_SIZE]={0};
 void vTelnetTask( void *pvParameters ){
 	int32_t lSocket, lClientFd, lBytes, lAddrLen = sizeof( struct sockaddr_in );
 	struct sockaddr_in sLocalAddr;
 	struct sockaddr_in client_addr;
 	const int8_t * const pcWelcomeMessage = ( const int8_t * ) "WhyEngineer command server - connection accepted.\r\nType Help to view a list of registered commands.\r\n\r\n>";
-	static int8_t cInputString[ cmdMAX_INPUT_SIZE ] = { 0 }, cLastInputString[ cmdMAX_INPUT_SIZE ] = { 0 };
+	static char cInputString[ cmdMAX_INPUT_SIZE ] = { 0 }, cLastInputString[ cmdMAX_INPUT_SIZE ] = { 0 };
 	portBASE_TYPE xReturned;
 	
 	(void) pvParameters;
-
+	CmdRegister();
 	lSocket = lwip_socket( AF_INET, SOCK_STREAM, 0 );
-
 	if( lSocket >= 0 ){
 		/* Obtain the address of the output buffer.  Note there is no mutual
 		exclusion on this buffer as it is assumed only one command console
 		interface will be used at any one time. */
-		char * pcOutputString = FreeRTOS_CLIGetOutputBuffer();
 
 		memset((char *)&sLocalAddr, 0, sizeof(sLocalAddr));
 		sLocalAddr.sin_family = AF_INET;
@@ -59,15 +59,25 @@ void vTelnetTask( void *pvParameters ){
 			if(lClientFd>0L){
 				lwip_send( lClientFd, pcWelcomeMessage, strlen( ( const char * ) pcWelcomeMessage ), 0 );
 				do{
-					lBytes = lwip_recv( lClientFd, &cInChar, sizeof( cInChar ), 0 );
-					if(lBytes>0){
-						for(int i=0;i<lBytes;i++){
-							printf("%x\n", cInChar[i]);
+					lBytes = lwip_recv( lClientFd, cInputString, sizeof( cInputString ), 0 );
+					for(int i=lBytes-1;i>=0;i--){
+						if (cInputString[i]=='\n'||cInputString[i]=='\r'){
+							cInputString[i]='\0';
+						}else{
+							break;
 						}
-						
 					}
-				}while(1);
+					printf("%s\n",cInputString );
+					do{
+						outbuf[0] = 0x00;
+						xReturned=FreeRTOS_CLIProcessCommand(cInputString,outbuf,cmdMAX_OUTPUT_SIZE);
+						lwip_send( lClientFd, outbuf, strlen(outbuf), 0 );
+					}
+					while(xReturned!=pdFALSE);
+
+				}while(lBytes>0L);
 			}
+			lwip_close( lClientFd );
 		}
 	}
 	
