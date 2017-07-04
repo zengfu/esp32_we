@@ -13,8 +13,8 @@
 #include "event.h"
 
 
-#define EXAMPLE_DEFAULT_SSID "ssid"
-#define EXAMPLE_DEFAULT_PWD "12345678"
+#define EXAMPLE_DEFAULT_SSID "Transee21_TP1"
+#define EXAMPLE_DEFAULT_PWD "02197545"
 
 #define EXAMPLE_MAX_STA_CONN 1 
 
@@ -29,6 +29,7 @@ void wifi_init_sta()
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_FLASH));
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = EXAMPLE_DEFAULT_SSID,
