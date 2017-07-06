@@ -54,7 +54,6 @@ void vTelnetTask( void *pvParameters ){
 		/* Ensure the input string starts clear. */
 		cInputString[ 0 ] = 0;
 		cLastInputString[ 0 ] = 0;
-		uint32_t length;
 		sprintf(path,"root@we:/#");
 		for(;;){
 			lClientFd = lwip_accept( lSocket, ( struct sockaddr * ) &client_addr, ( u32_t * ) &lAddrLen );
@@ -79,8 +78,6 @@ void vTelnetTask( void *pvParameters ){
 					do{
 						outbuf[0] = 0x00;
 						xReturned=FreeRTOS_CLIProcessCommand(cInputString,outbuf,cmdMAX_OUTPUT_SIZE);
-						length=strlen(outbuf);
-						sprintf(outbuf+length,"%s","---------\r\n");
 						lwip_send( lClientFd, outbuf, strlen(outbuf), 0 );
 					}
 					while(xReturned!=pdFALSE);

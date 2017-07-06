@@ -39,9 +39,12 @@
 
 #define TAG "main:"
 
+
+mqtt_client *client;
+
 void connected_cb(void *self, void *params)
 {
-    mqtt_client *client = (mqtt_client *)self;
+    client = (mqtt_client *)self;
     mqtt_subscribe(client, "/test", 0);
     mqtt_publish(client, "/test", "howdy!", 6, 0, 0);
 }
@@ -56,7 +59,6 @@ void reconnect_cb(void *self, void *params)
 void subscribe_cb(void *self, void *params)
 {
     printf("[APP] Subscribe ok, test publish msg\n");
-    mqtt_client *client = (mqtt_client *)self;
     mqtt_publish(client, "/test", "abcde", 5, 0, 0);
 }
 
@@ -66,7 +68,6 @@ void publish_cb(void *self, void *params)
 }
 void data_cb(void *self, void *params)
 {
-    mqtt_client *client = (mqtt_client *)self;
     mqtt_event_data_t *event_data = (mqtt_event_data_t *)params;
 
     if (event_data->data_offset == 0) {
@@ -100,7 +101,7 @@ mqtt_settings settings = {
     .client_id = "esp32_iot",
     .username = "frankie",
     .password = "71451085a",
-    .clean_session = 0,
+    .clean_session = 1,
     .keepalive = 120,
     .connected_cb = connected_cb,
     .disconnected_cb = disconnected_cb,
@@ -178,7 +179,7 @@ void app_main()
       //  return;
     //}
     mqtt_start(&settings);
-    xTaskCreate(vTelnetTask, "telnet_task", 2048, NULL, (tskIDLE_PRIORITY + 5), NULL);
+    xTaskCreate(vTelnetTask, "telnet_task", 2048, NULL, (tskIDLE_PRIORITY + 10), NULL);
     //char databuff[100]={0};
     //int len=0;
     
